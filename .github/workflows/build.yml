@@ -1,5 +1,5 @@
 
-name: Build Android APK
+name: Build Android APK - V2 Preview
 
 on:
   push:
@@ -14,12 +14,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Extract Android project
+      - name: Extract Android project V2
         run: |
-          test -f github.zip || { echo "github.zip was not found"; exit 1; }
-          unzip -oq github.zip -d .
+          test -f github-v2.zip || { echo "github-v2.zip was not found"; exit 1; }
+          unzip -oq github-v2.zip -d .
           test -f settings.gradle || { echo "settings.gradle was not found"; exit 1; }
           test -f app/build.gradle || { echo "app/build.gradle was not found"; exit 1; }
+          grep -q "com.electro.notebook.preview" app/build.gradle
 
       - name: Set up Java 17
         uses: actions/setup-java@v4
@@ -40,7 +41,6 @@ jobs:
             find "$ANDROID_HOME" -name sdkmanager -type f -print || true
             exit 1
           fi
-          echo "Using Android SDK manager: $SDKMANAGER"
           "$SDKMANAGER" --licenses < <(yes) > /dev/null
           "$SDKMANAGER" --install "platforms;android-35" "build-tools;35.0.0"
 
@@ -55,6 +55,6 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Daftar-AlKahraba-APK
+          name: Daftar-AlKahraba-V2-Preview-APK
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
