@@ -30,10 +30,19 @@ jobs:
       - name: Install Android SDK packages
         shell: bash
         run: |
-          test -n "${ANDROID_HOME:-}" || { echo "Android SDK is not available"; exit 1; }
-          command -v sdkmanager
-          sdkmanager --licenses < <(yes) > /dev/null
-          sdkmanager --install "platforms;android-35" "build-tools;35.0.0"
+          if [[ -z "${ANDROID_HOME:-}" ]]; then
+            echo "::error::ANDROID_HOME is not set"
+            exit 1
+          fi
+          SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          if [[ ! -x "$SDKMANAGER" ]]; then
+            echo "::error::sdkmanager not found at $SDKMANAGER"
+            find "$ANDROID_HOME" -name sdkmanager -type f -print || true
+            exit 1
+          fi
+          echo "Using Android SDK manager: $SDKMANAGER"
+          "$SDKMANAGER" --licenses < <(yes) > /dev/null
+          "$SDKMANAGER" --install "platforms;android-35" "build-tools;35.0.0"
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
